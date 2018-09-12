@@ -43,11 +43,8 @@ export default {
   },
   computed: {
     notePreview () {
-      if (this.selectedNote.content) {
-        return this.selectedNote ? marked(this.selectedNote.content) : ''
-      } else {
-        return ''
-      }
+      let sNote = this.selectedNote
+      return sNote && sNote.content ? marked(sNote.content) : ''
     },
     addNoteButtonTitle () {
       return this.notes.length + ' note(s) already'
