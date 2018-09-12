@@ -6,13 +6,18 @@
       </div>
       <div class="notes">
         <!-- notes -->
-        <div class="note" v-for="note of notes" @click="selectNote(note)" :key="note">{{note.title}}</div>
+        <div class="note" v-for="(note, index) in notes" @click="selectNote(note)" :key="index">
+          {{note.title}}
+        </div>
       </div>
     </aside>
     <template v-if="selectedNote">
     <section class="main">
+      <label for="title-input"></label>
+      <input type="text" id="title-input" v-model="selectedNote.title"/>
       <label for="text-content"></label>
-      <textarea v-model="selectedNote.content" id="text-content"></textarea>
+      <textarea v-model="selectedNote.content" id="text-content" rows="40"></textarea>
+      <button class="primary" @click="saveSelected" id="save-button">Save</button>
     </section>
     <aside class="preview" v-html="notePreview"></aside>
     </template>
@@ -20,7 +25,13 @@
 </template>
 
 <script>
+// import axios from 'axios'
+import Vue from 'vue'
+import VueResource from 'vue-resource'
 import marked from '../../static/marked'
+const baseURL = 'http://127.0.0.1:8000/api/v1/'
+
+Vue.use(VueResource)
 
 export default {
   name: 'notebook',
@@ -32,7 +43,11 @@ export default {
   },
   computed: {
     notePreview () {
-      return this.selectedNote ? marked(this.selectedNote.content) : ''
+      if (this.selectedNote.content) {
+        return this.selectedNote ? marked(this.selectedNote.content) : ''
+      } else {
+        return ''
+      }
     },
     addNoteButtonTitle () {
       return this.notes.length + ' note(s) already'
@@ -41,20 +56,63 @@ export default {
       return this.notes.find(note => note.id === this.selectedId)
     }
   },
+  mounted () {
+    this.getAllNotes()
+  },
   methods: {
     addNote () {
-      const time = Date.now()
-      const note = {
-        id: String(time),
-        title: 'New note' + (this.notes.length + 1),
-        content: 'Write your **note** *here*',
-        created: time,
-        favorite: false
+      // const time = Date.now()
+      // let note = {
+      //   // id: String(time),
+      //   title: 'New note' + (this.notes.length + 1),
+      //   content: 'Write your **note** *here*',
+      //   created: time,
+      //   favorite: false
+      // }
+
+      let newNote = {
+        title: 'New note ' + (this.notes.length + 1),
+        content: 'Write your **note** *here*'
       }
-      this.notes.push(note)
+      this.$http.post(baseURL, newNote)
+        .then((response) => {
+          console.log('Response from post is: ' + response.data)
+          let createdNote = JSON.parse(JSON.stringify(response.data))
+          console.log('Newly created: ' + createdNote)
+          this.notes.push(createdNote)
+          console.log('After adding new, now notes are: ' + this.notes)
+        })
+        .catch((response) => {
+          console.log('Error from post is: ' + response.responseText)
+        })
+      // this.notes.push(note)
+      // this.getAllNotes()
     },
     selectNote (note) {
       this.selectedId = note.id
+    },
+    getAllNotes () {
+      this.$http.get(baseURL)
+        .then((response) => {
+          console.log('response: ' + response.data.toString())
+          console.log('response length: ' + response.data.length)
+          console.log('object 1: ' + JSON.stringify(response.data[0]))
+          console.log('object 2: ' + JSON.stringify(response.data[1]))
+          for (let i = 0; i < response.data.length; i++) {
+            this.notes.push(JSON.parse(JSON.stringify(response.data[i])))
+          }
+          // console.log(this.notes)
+        })
+    },
+    saveSelected () {
+      console.log('selectedNote: ' + this.selectedNote)
+      this.$http.put(baseURL + this.selectedNote.id + '/', this.selectedNote)
+        .then((response) => {
+          console.log('post succeeded. response is: ' + response.data)
+        })
+        .catch((response) => {
+          console.log('Error: response is: ' + response.responseText)
+        })
     }
   }
 }
@@ -85,8 +143,13 @@ body {
   height: 100%;
 
   > * {
-    flex: auto 0 0;
+    flex: auto 1 1;
   }
+}
+
+#save-button {
+  width: 50%;
+  background: dodgerblue;
 }
 
 .side-bar {
@@ -171,10 +234,11 @@ input {
 
 textarea {
   resize: none;
-  border: none;
+  border: 0.2rem solid gray;
   box-sizing: border-box;
   margin: 0 4px;
   font-family: monospace;
+  height: auto;
 }
 
 textarea, .notes, .preview {
