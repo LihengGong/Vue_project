@@ -1,2 +1,2 @@
 # Vue_project
-Vue + restful framework
+Vue + DRF(Djano Restful Framework)
