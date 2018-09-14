@@ -39,7 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'markdownapp.apps.MarkdownappConfig',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
+    'djoser',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -83,8 +86,8 @@ DATABASES = {
         # 'ENGINE':'django.db.backends.sqlite3',
         # 'NAME':os.path.join(BASE_DIR,'db.sqlite3'),
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'markdown01',
-        'USER': 'markdown01',
+        'NAME': 'markdown03',
+        'USER': 'markdown03',
         'PASSWORD': '..sleep',
     }
 }
@@ -128,6 +131,17 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
+# Django rest framework
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+}
 
 # CORS
 

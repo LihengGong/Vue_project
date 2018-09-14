@@ -30,6 +30,7 @@ import Vue from 'vue'
 import VueResource from 'vue-resource'
 import marked from '../../static/marked'
 const baseURL = 'http://127.0.0.1:8000/api/v1/'
+const authURL = 'http://localhost:8000/auth/users/me/'
 
 Vue.use(VueResource)
 
@@ -38,7 +39,9 @@ export default {
   data () {
     return {
       notes: [],
-      selectedId: null
+      selectedId: null,
+      userName: '',
+      userId: null
     }
   },
   computed: {
@@ -54,22 +57,15 @@ export default {
     }
   },
   mounted () {
-    this.getAllNotes()
+    this.getCurrentUser()
+    // this.getAllNotes()
   },
   methods: {
     addNote () {
-      // const time = Date.now()
-      // let note = {
-      //   // id: String(time),
-      //   title: 'New note' + (this.notes.length + 1),
-      //   content: 'Write your **note** *here*',
-      //   created: time,
-      //   favorite: false
-      // }
-
       let newNote = {
         title: 'New note ' + (this.notes.length + 1),
-        content: 'Write your **note** *here*'
+        content: 'Write your **note** *here*',
+        author: this.userId
       }
       this.$http.post(baseURL, newNote)
         .then((response) => {
@@ -82,23 +78,16 @@ export default {
         .catch((response) => {
           console.log('Error from post is: ' + response.responseText)
         })
-      // this.notes.push(note)
-      // this.getAllNotes()
     },
     selectNote (note) {
       this.selectedId = note.id
     },
     getAllNotes () {
-      this.$http.get(baseURL)
+      this.$http.get(baseURL + '?' + 'author=' + this.userId)
         .then((response) => {
-          console.log('response: ' + response.data.toString())
-          console.log('response length: ' + response.data.length)
-          console.log('object 1: ' + JSON.stringify(response.data[0]))
-          console.log('object 2: ' + JSON.stringify(response.data[1]))
           for (let i = 0; i < response.data.length; i++) {
             this.notes.push(JSON.parse(JSON.stringify(response.data[i])))
           }
-          // console.log(this.notes)
         })
     },
     saveSelected () {
@@ -109,6 +98,25 @@ export default {
         })
         .catch((response) => {
           console.log('Error: response is: ' + response.responseText)
+        })
+    },
+    getCurrentUser () {
+      let tokenString = 'Token '.concat(JSON.parse(localStorage['token']))
+      this.$http.get(authURL,
+        {
+          headers: {
+            'Authorization': tokenString
+          }
+        })
+        .then((response) => {
+          console.log('getCurrentUser: ' + JSON.stringify(response.data))
+          let id = JSON.stringify(response.data.id)
+          let user = JSON.stringify(response.data.username)
+          sessionStorage.setItem('id', id)
+          sessionStorage.setItem('username', user)
+          this.userName = user
+          this.userId = id
+          this.getAllNotes()
         })
     }
   }
