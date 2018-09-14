@@ -25,7 +25,7 @@
 </template>
 
 <script>
-// import axios from 'axios'
+// VueResource or axios?
 import Vue from 'vue'
 import VueResource from 'vue-resource'
 import marked from '../../static/marked'
@@ -33,6 +33,11 @@ const baseURL = 'http://127.0.0.1:8000/api/v1/'
 const authURL = 'http://localhost:8000/auth/users/me/'
 
 Vue.use(VueResource)
+Vue.http.interceptors.push((request, next) => {
+  let tokenString = 'Token ' + JSON.parse(sessionStorage.getItem('authToken'))
+  request.headers.set('Authorization', tokenString)
+  next()
+})
 
 export default {
   name: 'notebook',
@@ -58,7 +63,6 @@ export default {
   },
   mounted () {
     this.getCurrentUser()
-    // this.getAllNotes()
   },
   methods: {
     addNote () {
@@ -101,13 +105,7 @@ export default {
         })
     },
     getCurrentUser () {
-      let tokenString = 'Token '.concat(JSON.parse(localStorage['token']))
-      this.$http.get(authURL,
-        {
-          headers: {
-            'Authorization': tokenString
-          }
-        })
+      this.$http.get(authURL)
         .then((response) => {
           console.log('getCurrentUser: ' + JSON.stringify(response.data))
           let id = JSON.stringify(response.data.id)
