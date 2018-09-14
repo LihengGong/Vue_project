@@ -1,8 +1,20 @@
 # markdown2
 
-> A Vue.js project
+> An online markdown editor
 
-## Build Setup
+
+## Features
+- User registration and authorization
+- Real time preview
+
+
+## Architecture
+Frontend: Vue.js  
+Backend: Django + DRF(Django REST Framework)  
+Djoser is used as user registration and authentication backend
+Django-filter is used to alleviate the pain of 'filter down a queryset based on a model’s fields'
+
+## Frontend Build Setup
 
 ``` bash
 # install dependencies
@@ -28,3 +40,5 @@ npm test
 ```
 
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+
+
